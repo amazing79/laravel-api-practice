@@ -6,8 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Models\Customer;
+//Resources
 use App\Http\Resources\V1\CustomerResource;
 use App\Http\Resources\V1\CustomerCollection;
+//Filters
+use App\Filters\v1\CustomerFilter;
+use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
@@ -16,9 +20,16 @@ class CustomerController extends Controller
      *
      * @return CustomerCollection
      */
-    public function index()
+    public function index(Request $request): CustomerCollection
     {
-        return new CustomerCollection(Customer::paginate());
+        $filter = new CustomerFilter();
+        $queryItems = $filter->transform($request);
+        if(count($queryItems) == 0 ){
+            return new CustomerCollection(Customer::paginate());
+        }
+        $customers = Customer::where($queryItems)->paginate();
+        $params = $request->getQueryString();
+        return new CustomerCollection($customers->appends($request->getQueryString()));
     }
 
     /**

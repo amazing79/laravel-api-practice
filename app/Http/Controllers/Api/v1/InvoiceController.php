@@ -2,17 +2,20 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\Filters\v1\InvoiceFilter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreInvoiceRequest;
-use App\Http\Requests\UpdateInvoiceRequest;
+use App\Http\Requests\V1\StoreInvoiceRequest;
+use App\Http\Requests\V1\UpdateInvoiceRequest;
+use App\Http\Resources\V1\InvoiceCollection;
+use App\Http\Resources\V1\InvoiceResource;
+use App\Http\Requests\V1\BulkStoreInvoiceRequest;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
+
 //Resources
-use App\Http\Resources\V1\InvoiceResource;
-use App\Http\Resources\V1\InvoiceCollection;
 //Filters
-use App\Filters\v1\InvoiceFilter;
 class InvoiceController extends Controller
 {
     /**
@@ -41,7 +44,7 @@ class InvoiceController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreInvoiceRequest  $request
+     * @param  \App\Http\Requests\V1\StoreInvoiceRequest  $request
      * @return Response
      */
     public function store(StoreInvoiceRequest $request)
@@ -49,6 +52,15 @@ class InvoiceController extends Controller
         //
     }
 
+    public function bulkStore(BulkStoreInvoiceRequest $request)
+    {
+        $bulk = collect($request->all())
+                ->map(function ($arr, $key) {
+                    return Arr::except($arr, ['customerId', 'billedDate', 'paidDate']);
+                });
+
+        Invoice::insert($bulk->toArray());
+    }
     /**
      * Display the specified resource.
      *
@@ -74,7 +86,7 @@ class InvoiceController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateInvoiceRequest  $request
+     * @param  \App\Http\Requests\V1\UpdateInvoiceRequest  $request
      * @param  \App\Models\Invoice  $invoice
      * @return Response
      */

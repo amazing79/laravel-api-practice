@@ -12,6 +12,7 @@ use App\Http\Resources\V1\CustomerCollection;
 //Filters
 use App\Filters\v1\CustomerFilter;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class CustomerController extends Controller
 {
@@ -33,25 +34,16 @@ class CustomerController extends Controller
         return new CustomerCollection($customers->paginate()->appends($request->query()));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param  \App\Http\Requests\StoreCustomerRequest  $request
-     * @return \Illuminate\Http\Response
+     * @return CustomerResource
      */
     public function store(StoreCustomerRequest $request)
     {
-        //
+        return new CustomerResource(Customer::create($request->all()));
     }
 
     /**
@@ -73,34 +65,30 @@ class CustomerController extends Controller
         return new CustomerResource($customer);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param Customer $customer
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Customer $customer)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \App\Http\Requests\UpdateCustomerRequest  $request
      * @param Customer $customer
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-    public function update(UpdateCustomerRequest $request, Customer $customer)
+    public function update(UpdateCustomerRequest $request, Customer $customer): Response
     {
-        //
+        try {
+            $customer->update($request->all());
+            return  new Response('Excelente fiera!');
+        } catch (\Exception $e) {
+            return new Response('Que hiciste cabeza?', 400);
+        }
+
     }
 
     /**
      * Remove the specified resource from storage.
      *
      * @param Customer $customer
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy(Customer $customer)
     {
